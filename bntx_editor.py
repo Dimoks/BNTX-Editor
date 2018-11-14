@@ -871,7 +871,7 @@ class MainWindow(QtWidgets.QWidget):
     def exportTexAll2Png(self):
         for i in range(self.bntx.texContainer.count):
             texture = self.bntx.textures[i]
-            self.saveToPng(texture.name[:]+".png", texture)
+            self.saveToPng(  self.BFRESPath + '/' + texture.name[:]+".png", texture)
 
     def saveToPng(self, name, texture):
         if texture.format_ in [0x101, 0x201, 0x301, 0x401, 0x501, 0x601, 0x701,
