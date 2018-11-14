@@ -246,6 +246,7 @@ class MainWindow(QtWidgets.QWidget):
         self.imgDimComboBox.setEnabled(False)
         self.imgDimComboBox.currentIndexChanged.connect(self.imgDimChanged)
         
+		  # here
         openLayout = QtWidgets.QHBoxLayout()
         openLayout.addWidget(self.openbtn)
         openLayout.addWidget(self.openLnEdt)
@@ -357,10 +358,16 @@ class MainWindow(QtWidgets.QWidget):
         self.exportAllButton.setText("Export All")
         self.exportAllButton.clicked.connect(self.exportTexAll)
         
+        self.exportAllButton2png = QtWidgets.QPushButton()
+        self.exportAllButton2png.setEnabled(False)
+        self.exportAllButton2png.setText("Export All2Png")
+        self.exportAllButton2png.clicked.connect(self.exportTexAll2Png)
+
         exportLayout = QtWidgets.QHBoxLayout()
         exportLayout.addWidget(self.exportButton)
         exportLayout.addWidget(self.exportAsButton)
         exportLayout.addWidget(self.exportAllButton)
+        exportLayout.addWidget(self.exportAllButton2png)
 
         self.replaceButton = QtWidgets.QPushButton()
         self.replaceButton.setEnabled(False)
@@ -471,6 +478,7 @@ class MainWindow(QtWidgets.QWidget):
         self.exportButton.setEnabled(False)
         self.exportAsButton.setEnabled(False)
         self.exportAllButton.setEnabled(False)
+        self.exportAllButton2png.setEnabled(False)
         self.replaceButton.setEnabled(False)
         self.saveButton.setEnabled(False)
         self.saveAsButton.setEnabled(False)
@@ -521,6 +529,7 @@ class MainWindow(QtWidgets.QWidget):
             self.exportButton.setEnabled(True)
             self.exportAsButton.setEnabled(True)
             self.exportAllButton.setEnabled(True)
+            self.exportAllButton2png.setEnabled(True)
             self.replaceButton.setEnabled(True)
             self.saveButton.setEnabled(True)
             self.saveAsButton.setEnabled(True)
@@ -858,6 +867,136 @@ class MainWindow(QtWidgets.QWidget):
             out.write(self.bntx.save())
 
         self.openLnEdt.setText(file)
+
+    def exportTexAll2Png(self):
+        for i in range(self.bntx.texContainer.count):
+            texture = self.bntx.textures[i]
+            self.saveToPng(texture.name[:]+".png", texture)
+
+    def saveToPng(self, name, texture):
+        if texture.format_ in [0x101, 0x201, 0x301, 0x401, 0x501, 0x601, 0x701,
+                               0x801, 0x901, 0xb01, 0xb06, 0xc01, 0xc06, 0xe01,
+                               0x1a01, 0x1a06, 0x1b01, 0x1b06, 0x1c01, 0x1c06,
+                               0x1d01, 0x1d02, 0x1e01, 0x1e02, 0x3b01] and texture.dim == 2:
+
+            result, _, _ = self.bntx.rawData(texture)
+
+            if texture.format_ == 0x101:
+                data = result[0]
+
+                format_ = 'la4'
+                bpp = 1
+
+            elif texture.format_ == 0x201:
+                data = result[0]
+
+                format_ = 'l8'
+                bpp = 1
+
+            elif texture.format_ == 0x301:
+                data = result[0]
+
+                format_ = 'rgba4'
+                bpp = 2
+
+            elif texture.format_ == 0x401:
+                data = result[0]
+
+                format_ = 'abgr4'
+                bpp = 2
+
+            elif texture.format_ == 0x501:
+                data = result[0]
+
+                format_ = 'rgb5a1'
+                bpp = 2
+
+            elif texture.format_ == 0x601:
+                data = result[0]
+
+                format_ = 'a1bgr5'
+                bpp = 2
+
+            elif texture.format_ == 0x701:
+                data = result[0]
+
+                format_ = 'rgb565'
+                bpp = 2
+
+            elif texture.format_ == 0x801:
+                data = result[0]
+
+                format_ = 'bgr565'
+                bpp = 2
+
+            elif texture.format_ == 0x901:
+                data = result[0]
+
+                format_ = 'la8'
+                bpp = 2
+
+            elif (texture.format_ >> 8) == 0xb:
+                data = result[0]
+
+                format_ = 'rgba8'
+                bpp = 4
+
+            elif (texture.format_ >> 8) == 0xc:
+                data = result[0]
+
+                format_ = 'bgra8'
+                bpp = 4
+
+            elif texture.format_ == 0xe01:
+                data = result[0]
+
+                format_ = 'bgr10a2'
+                bpp = 4
+
+            elif (texture.format_ >> 8) == 0x1a:
+                data = BNTX.bcn.decompressDXT1(result[0], texture.width, texture.height)
+
+                format_ = 'rgba8'
+                bpp = 4
+
+            elif (texture.format_ >> 8) == 0x1b:
+                data = BNTX.bcn.decompressDXT3(result[0], texture.width, texture.height)
+
+                format_ = 'rgba8'
+                bpp = 4
+
+            elif (texture.format_ >> 8) == 0x1c:
+                data = BNTX.bcn.decompressDXT5(result[0], texture.width, texture.height)
+
+                format_ = 'rgba8'
+                bpp = 4
+
+            elif (texture.format_ >> 8) == 0x1d:
+                data = BNTX.bcn.decompressBC4(result[0], texture.width, texture.height, 0 if texture.format_ & 3 == 1 else 1)
+
+                format_ = 'rgba8'
+                bpp = 4
+
+            elif (texture.format_ >> 8) == 0x1e:
+                data = BNTX.bcn.decompressBC5(result[0], texture.width, texture.height, 0 if texture.format_ & 3 == 1 else 1)
+
+                format_ = 'rgba8'
+                bpp = 4
+
+            elif texture.format_ == 0x3b01:
+                data = result[0]
+
+                format_ = 'bgr5a1'
+                bpp = 2
+
+            data = BNTX.dds.formConv.torgba8(texture.width, texture.height, bytearray(data), format_, bpp, texture.compSel)
+            img = QImage(data, texture.width, texture.height, QImage.Format_RGBA8888)
+
+            img.save(name)
+        else:
+            pass
+
+
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
