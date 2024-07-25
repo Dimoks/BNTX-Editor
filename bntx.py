@@ -232,10 +232,23 @@ class File:
                     '?', '_').replace('"', '_').replace('<', '_').replace('>', '_').replace('|', '_')
 
                 if (texture.format_ >> 8) in globals.ASTC_formats:
-                    file = os.path.join(BFRESPath, name + '.astc')
-
+                    outfolder = "astc"
+                    if (self.texContainer.count > 1):
+                        file = os.path.join(BFRESPath, outfolder, self.name, name + '.astc')
+                    else:
+                        file = os.path.join(BFRESPath, outfolder, name + '.astc')
+                
                 else:
-                    file = os.path.join(BFRESPath, name + '.dds')
+                    outfolder = "dds"
+                    if (self.texContainer.count > 1):
+                        file = os.path.join(BFRESPath, outfolder, self.name, name + '.dds')
+                    else:
+                        file = os.path.join(BFRESPath, outfolder, name + '.dds')
+                
+                if (self.texContainer.count > 1):
+                    os.makedirs(os.path.join(BFRESPath, outfolder, self.name), exist_ok=True)
+                else:
+                    os.makedirs(os.path.join(BFRESPath, outfolder), exist_ok=True)
 
             if (texture.format_ >> 8) in globals.ASTC_formats:
                 outBuffer = b''.join([
@@ -245,7 +258,7 @@ class File:
                     texture.height.to_bytes(3, "little"), b'\1\0\0',
                     result_[0],
                 ])
-
+                
                 with open(file, "wb+") as output:
                     output.write(outBuffer)
 
