@@ -246,7 +246,6 @@ class MainWindow(QtWidgets.QWidget):
         self.imgDimComboBox.setEnabled(False)
         self.imgDimComboBox.currentIndexChanged.connect(self.imgDimChanged)
         
-		  # here
         openLayout = QtWidgets.QHBoxLayout()
         openLayout.addWidget(self.openbtn)
         openLayout.addWidget(self.openLnEdt)
@@ -413,7 +412,6 @@ class MainWindow(QtWidgets.QWidget):
         fileLayout.addLayout(alignmentLayout)
         fileLayout.addLayout(chan1Layout)
         fileLayout.addLayout(chan2Layout)
-        fileLayout.addLayout(chan2Layout)
         fileLayout.addLayout(chan3Layout)
         fileLayout.addLayout(chan4Layout)
         fileLayout.addLayout(imgDimLayout)
@@ -428,8 +426,6 @@ class MainWindow(QtWidgets.QWidget):
         Layout = QtWidgets.QGridLayout()
         Layout.addWidget(self.Viewer, 0, 1)
         Layout.addLayout(fileLayout, 0, 0)
-        self.setLayout(Layout)
-
         self.setLayout(Layout)
 
     def createPreviewer(self):
