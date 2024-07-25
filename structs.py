@@ -197,12 +197,17 @@ class StringTable:
         def load(self, data, pos):
             self.pos = pos
             self.size_ = struct.unpack_from(self.format, data, pos)[0]
-            self.string = data[pos + 2:pos + 2 + self.size_].decode('utf-8')
+            try:
+                self.string = data[pos + 2:pos + 2 + self.size_].decode('utf-8')
+                self.string_encoding = 'utf-8'
+            except UnicodeDecodeError:
+                self.string = data[pos + 2:pos + 2 + self.size_].decode('shift-jis')
+                self.string_encoding = 'shift-jis'
 
         def save(self):
             return b''.join([
                 struct.pack(self.format, self.size_),
-                self.string.encode('utf-8'), b'\0',
+                self.string.encode(self.string_encoding), b'\0',
             ])
 
     def __init__(self, endianness):
@@ -320,9 +325,9 @@ class TextureInfo:
          self.userDictAddr) = struct.unpack_from(self.format, data, pos)
 
         self.compSel = [(self._compSel >> (8 * i)) & 0xff for i in range(4)]
-        self.readTexLayout = self.flags & 1
-        self.sparseBinding = self.flags >> 1
-        self.sparseResidency = self.flags >> 2
+        self.readTexLayout = self.flags & (1 << 0)
+        self.sparseBinding = self.flags & (1 << 1)
+        self.sparseResidency = self.flags & (1 << 2)
         self.blockHeightLog2 = self.textureLayout & 7
 
         firstMipOffset = readInt64(data, self.ptrsAddr, self.format[:1])
