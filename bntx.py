@@ -217,7 +217,7 @@ class File:
 
             result_, blkWidth, blkHeight = self.rawData(texture)
 
-            if exportAs:
+            if exportAs == 1:
                 if (texture.format_ >> 8) in globals.ASTC_formats:
                     file = QtWidgets.QFileDialog.getSaveFileName(None, "Save File", "", "ASTC (*.astc)")[0]
 
@@ -226,6 +226,10 @@ class File:
 
                 if not file:
                     return False
+
+            elif isinstance(exportAs, str) and exportAs:
+                file = exportAs
+                os.makedirs(os.path.dirname(file), exist_ok=True)
 
             else:
                 name = texture.name.replace('\\', '_').replace('/', '_').replace(':', '_').replace('*', '_').replace(
@@ -237,14 +241,14 @@ class File:
                         file = os.path.join(BFRESPath, outfolder, self.name, name + '.astc')
                     else:
                         file = os.path.join(BFRESPath, outfolder, name + '.astc')
-                
+
                 else:
                     outfolder = "dds"
                     if (self.texContainer.count > 1):
                         file = os.path.join(BFRESPath, outfolder, self.name, name + '.dds')
                     else:
                         file = os.path.join(BFRESPath, outfolder, name + '.dds')
-                
+
                 if (self.texContainer.count > 1):
                     os.makedirs(os.path.join(BFRESPath, outfolder, self.name), exist_ok=True)
                 else:
@@ -258,7 +262,7 @@ class File:
                     texture.height.to_bytes(3, "little"), b'\1\0\0',
                     result_[0],
                 ])
-                
+
                 with open(file, "wb+") as output:
                     output.write(outBuffer)
 
@@ -409,7 +413,7 @@ class File:
         texture.imgDim = 1
         texture.data = b''.join(result)
 
-        return texture 
+        return texture
 
     def save(self):
         self.relocTblHeader.blockSize = 2
